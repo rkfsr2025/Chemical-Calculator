@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chemical Quantity Calculator</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
+
+<style>
+  :root {
+    --primary: #0077aa;
+    --accent: #00c6ff;
+    --bg-gradient: linear-gradient(135deg, #e0f7fa 0%, #f0faff 100%);
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg-gradient);
+    color: #222;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    text-align: center;
+    padding: 22px 10px 10px;
+    color: white;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    box-shadow: var(--shadow);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    letter-spacing: 0.5px;
+  }
+
+  .container {
+    flex: 1;
+    max-width: 600px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    padding: 20px 25px 30px;
+  }
+
+  .tabs {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    background: rgba(240, 240, 240, 0.6);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primary);
+    transition: all 0.3s ease;
+  }
+
+  .tab.active {
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    color: white;
+  }
+
+  .tab-content { display: none; animation: fadeIn 0.4s ease; }
+  .tab-content.active { display: block; }
+
+  label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 6px rgba(0, 119, 170, 0.3);
+    outline: none;
+  }
+
+  .result {
+    margin-top: 18px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--primary);
+    background: rgba(0, 119, 170, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  button {
+    flex: 1;
+    margin: 0 4px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+    padding: 15px 0;
+    background: #f0faff;
+    border-top: 1px solid #ddd;
+  }
+
+  footer strong {
+    color: var(--primary);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.4rem; }
+    .container { width: 92%; padding: 15px; }
+    button { font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chemical Quantity Calculator</h1>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" data-tab="solid" onclick="switchTab('solid')">Solid Chemical</div>
+    <div class="tab" data-tab="liquid" onclick="switchTab('liquid')">Liquid Chemical</div>
+  </div>
+
+  <!-- Solid Calculator -->
+  <div id="solid" class="tab-content active">
+    <label>Equivalent Weight (g/eq):</label>
+    <input type="number" id="eqw_s" step="any">
+    <label>Volume (mL):</label>
+    <input type="number" id="vol_s" step="any">
+    <label>Concentration (N):</label>
+    <input type="number" id="norm_s" step="any">
+    <label>Purity (%):</label>
+    <input type="number" id="pur_s" step="any">
+    <div class="result">Needed Chemical: <span id="out_s">—</span> g</div>
+    <div class="buttons">
+      <button onclick="calcSolid()">Calculate</button>
+      <button onclick="resetSolid()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Liquid Calculator -->
+  <div id="liquid" class="tab-content">
+    <label>Equivalent Weight (g/eq):</label>
+    <input type="number" id="eqw_l" step="any">
+    <label>Volume (mL):</label>
+    <input type="number" id="vol_l" step="any">
+    <label>Concentration (N):</label>
+    <input type="number" id="norm_l" step="any">
+    <label>Purity (%):</label>
+    <input type="number" id="pur_l" step="any">
+    <label>Specific Gravity:</label>
+    <input type="number" id="sg_l" step="any">
+    <div class="result">Needed Quantity: <span id="out_l">—</span> mL</div>
+    <div class="buttons">
+      <button onclick="calcLiquid()">Calculate</button>
+      <button onclick="resetLiquid()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Developed by: <strong>Rokibul Islam Khan</strong><br>
+  DyM - R & D
+</footer>
+
+<script>
+function switchTab(tab) {
+  // Remove all actives
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+  // Activate the clicked one using data-tab attribute
+  document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('active');
+  document.getElementById(tab).classList.add('active');
+}
+
+function calcSolid(){
+  const eq = parseFloat(document.getElementById('eqw_s').value);
+  const V  = parseFloat(document.getElementById('vol_s').value);
+  const N  = parseFloat(document.getElementById('norm_s').value);
+  const Pp = parseFloat(document.getElementById('pur_s').value);
+  if ([eq,V,N,Pp].some(v => !v || v <= 0)) return document.getElementById('out_s').textContent = 'Invalid';
+  const g = (N * eq * V * 100) / (1000 * Pp);
+  document.getElementById('out_s').textContent = g.toFixed(4);
+}
+
+function resetSolid(){
+  document.querySelectorAll('#solid input').forEach(i => i.value = '');
+  document.getElementById('out_s').textContent = '—';
+}
+
+function calcLiquid(){
+  const eq = parseFloat(document.getElementById('eqw_l').value);
+  const V  = parseFloat(document.getElementById('vol_l').value);
+  const N  = parseFloat(document.getElementById('norm_l').value);
+  const Pp = parseFloat(document.getElementById('pur_l').value);
+  const SG = parseFloat(document.getElementById('sg_l').value);
+  if ([eq,V,N,Pp,SG].some(v => !v || v <= 0)) return document.getElementById('out_l').textContent = 'Invalid';
+  const mL = (eq * N * V * 100) / (Pp * 1000 * SG);
+  document.getElementById('out_l').textContent = mL.toFixed(4);
+}
+
+function resetLiquid(){
+  document.querySelectorAll('#liquid input').forEach(i => i.value = '');
+  document.getElementById('out_l').textContent = '—';
+}
+</script>
+
+</body>
+</html>
