@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chemical Quantity Calculator</title>
+<link rel="manifest" href="manifest.json">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
 <style>
   body {font-family: Arial, sans-serif; margin: 0; padding: 0; background: white; color: #222;}
   .container {max-width: 600px; margin: auto; padding: 20px;}
